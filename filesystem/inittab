@@ -1,0 +1,17 @@
+#
+# /etc/inittab
+#
+
+::sysinit:/etc/rc
+::restart:/sbin/init
+::ctrlaltdel:/sbin/init
+::shutdown:/sbin/swapoff -a
+::shutdown:/bin/umount -a -r
+
+::askfirst:-/bin/sh
+
+tty2::askfirst:-/bin/sh
+tty3::askfirst:-/bin/sh
+tty4::askfirst:-/bin/sh
+
+# End of file

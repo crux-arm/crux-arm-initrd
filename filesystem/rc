@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# /etc/rc: Init startup script
+#
+
+exec > /dev/console < /dev/console 2>&1
+
+echo "The system is coming up.  Please wait."
+
+# Mounting filesystems
+/bin/mount -v -a
+
+# Remounting root filesystem (rw)
+/bin/mount -o remount,rw /
+
+# Populating /dev
+/sbin/mdev -s
+
+# Registering mdev as hotplug agent
+echo "/bin/mdev" > /proc/sys/kernel/hotplug
+
+# Creating and mounting /dev/pts
+/bin/mkdir /dev/pts
+/bin/mount -t devpts devpts /dev/pts
+
+# Starting kernel log daemon
+/sbin/klogd
+
+# Setting hostname
+/bin/hostname crux
+
+# Loading network loopback device
+/bin/ip addr add 127.0.0.1/8 dev lo broadcast + scope host
+/bin/ip link set lo up
+
+# Saving boot messages
+/bin/dmesg > /var/log/boot
+
+# End of file
