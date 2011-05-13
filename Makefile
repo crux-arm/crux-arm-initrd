@@ -15,7 +15,7 @@ KERNEL_PATH = $(TOPDIR)/../kernel/$(DEVICE)
 KERNEL_VERSION = $(shell grep '^KERNEL_VERSION = ' $(KERNEL_PATH)/Makefile | sed 's|KERNEL_VERSION = ||')
 
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
-BUSYBOX_VERSION  = 1.14.1
+BUSYBOX_VERSION  = 1.14.3
 
 .PHONY: all check-root busybox initrd clean distclean
 
@@ -28,14 +28,17 @@ dist-clean: busybox-distclean initrd-distclean
 check-root:
 	@if [ "$$UID" != "0" ]; then \
 		echo "You need to be root to do this."; \
+    echo "Now you should run 'make initrd' as root to finish compilation or 'sudo make initrd'."; \
 		exit 1; \
 	fi
 
 $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2:
 	wget -P $(WORK) -c http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
-$(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config
+$(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config $(WORK)/busybox-$(BUSYBOX_VERSION)-make382.patch
 	tar -C $(WORK) -xvjf $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
+	cd $(WORK)/busybox-$(BUSYBOX_VERSION) && \
+		patch -p1 -i $(WORK)/busybox-$(BUSYBOX_VERSION)-make382.patch
 	cp -v $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config $(WORK)/busybox-$(BUSYBOX_VERSION)/.config
 	touch $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
 
