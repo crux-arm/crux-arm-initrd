@@ -15,7 +15,7 @@ KERNEL_PATH = $(TOPDIR)/../kernel/$(DEVICE)
 KERNEL_VERSION = $(shell grep '^KERNEL_VERSION = ' $(KERNEL_PATH)/Makefile | sed 's|KERNEL_VERSION = ||')
 
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
-BUSYBOX_VERSION  = 1.14.3
+BUSYBOX_VERSION  = 1.18.4
 
 .PHONY: all check-root busybox initrd clean distclean
 
@@ -35,10 +35,8 @@ check-root:
 $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2:
 	wget -P $(WORK) -c http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
-$(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config $(WORK)/busybox-$(BUSYBOX_VERSION)-make382.patch
+$(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config
 	tar -C $(WORK) -xvjf $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
-	cd $(WORK)/busybox-$(BUSYBOX_VERSION) && \
-		patch -p1 -i $(WORK)/busybox-$(BUSYBOX_VERSION)-make382.patch
 	cp -v $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config $(WORK)/busybox-$(BUSYBOX_VERSION)/.config
 	touch $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
 
