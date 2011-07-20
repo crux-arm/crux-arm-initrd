@@ -44,7 +44,7 @@ main() {
   mkfs.$IMG_TYPE -F -m 0 -b 1024 initrd $IMG_SIZE && \
   mount -v -o loop -t $IMG_TYPE initrd $MNT_PATH && \
   rm -rf $MNT_PATH/lost+found && \
-  install -d -m 0755 $MNT_PATH/{mnt,etc,dev,sys,proc,lib,usr,var/{log,lock,run},tmp} && \
+  install -d -m 0755 $MNT_PATH/{mnt,media,etc,dev,sys,proc,lib,usr,var/{log,lock,run},tmp} && \
   mknod $MNT_PATH/dev/console c 5 1 && chmod 666 $MNT_PATH/dev/console && \
   mknod $MNT_PATH/dev/null c 1 3 && chmod 666 $MNT_PATH/dev/null && \
   mknod $MNT_PATH/dev/tty c 5 0 && chmod 666 $MNT_PATH/dev/tty && \
