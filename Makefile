@@ -13,9 +13,6 @@ WORK = $(TOPDIR)/work
 CLFS = $(TOPDIR)/../toolchain/clfs
 CROSSTOOLS = $(TOPDIR)/../toolchain/crosstools
 
-KERNEL_PATH = $(TOPDIR)/../kernel/$(DEVICE)
-KERNEL_VERSION = $(shell grep '^KERNEL_VERSION = ' $(KERNEL_PATH)/Makefile | sed 's|KERNEL_VERSION = ||')
-
 BUSYBOX_VERSION  = 1.18.4
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
@@ -91,28 +88,27 @@ dialog-distclean:
 $(WORK)/mnt:
 	mkdir -p $(WORK)/mnt
 
-$(WORK)/initrd-$(KERNEL_VERSION).gz: check-root busybox dialog $(KERNEL_PATH) $(WORK)/mnt $(TOPDIR)/filesystem $(TOPDIR)/mkinitrd.sh
-	sh mkinitrd.sh --name=$(WORK)/initrd-$(KERNEL_VERSION).gz --size=4096
-	cd $(WORK) && gunzip -v initrd-$(KERNEL_VERSION).gz
-	mount -v -t ext2 -o loop,rw $(WORK)/initrd-$(KERNEL_VERSION) $(WORK)/mnt
+$(WORK)/initrd.gz: check-root busybox dialog $(KERNEL_PATH) $(WORK)/mnt $(TOPDIR)/filesystem $(TOPDIR)/mkinitrd.sh
+	sh mkinitrd.sh --name=$(WORK)/initrd.gz --size=4096
+	cd $(WORK) && gunzip -v initrd.gz
+	mount -v -t ext2 -o loop,rw $(WORK)/initrd $(WORK)/mnt
 	cp -dRv $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/* $(WORK)/mnt
 	install -v -m 0755 $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog $(WORK)/mnt/usr/bin
-	#make -C $(KERNEL_PATH)/work/linux-$(KERNEL_VERSION) ARCH=arm INSTALL_MOD_PATH=$(WORK)/mnt modules_install
 	cp -dRv $(CLFS)/lib/libnss_{files*,dns*} $(CLFS)/lib/libresolv* $(WORK)/mnt/lib
 	install -d  $(WORK)/mnt/usr/share/terminfo
 	cp -dRv $(CLFS)/usr/share/terminfo/v $(WORK)/mnt/usr/share/terminfo
 	install -v -m 0644 $(TOPDIR)/filesystem/{fstab,inittab,profile,protocols,*.conf} $(WORK)/mnt/etc
 	install -v -m 0755 $(TOPDIR)/filesystem/rc $(WORK)/mnt/etc && \
-	install -v -m 0755 $(TOPDIR)/filesystem/{crux,setup*} $(WORK)/mnt/usr/bin && \
+	install -v -m 0755 $(TOPDIR)/filesystem/crux $(WORK)/mnt/usr/bin && \
 	/sbin/ldconfig -r $(WORK)/mnt
 	umount -v $(WORK)/mnt
-	cd $(WORK) && gzip -v initrd-$(KERNEL_VERSION)
-	touch $(WORK)/initrd-$(KERNEL_VERSION).gz
+	cd $(WORK) && gzip -v initrd
+	touch $(WORK)/initrd.gz
 
-initrd: $(WORK)/initrd-$(KERNEL_VERSION).gz
+initrd: $(WORK)/initrd.gz
 
 initrd-clean: check-root
-	rm -rf initrd-$(KERNEL_VERSION).gz
+	rm -rf initrd.gz
 
 initrd-distclean: initrd-clean
 
