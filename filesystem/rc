@@ -1,39 +1,148 @@
 #!/bin/sh
+
 #
-# /etc/rc: Init startup script
+# initramfs /init (busybox ash)
 #
 
-exec > /dev/console < /dev/console 2>&1
+# color codes and some predefined texts
+BOLD="\033[1m"
+NORM="\033[0m"
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+BLUE="\033[34m"
+OK="${BOLD}${GREEN}OK${NORM}"
+FAILED="${BOLD}${RED}FAILED${NORM}"
 
-echo "The system is coming up.  Please wait."
+# helper functions
 
-# Mounting filesystems
-/bin/mount -v -a
+# check an exit value and print a colored status
+checkReturn() {
+	if [ $? -ne 0 ]
+	then
+		echo -e $FAILED
+	else
+		echo -e $OK
+	fi
+}
 
-# Remounting root filesystem (rw)
-/bin/mount -o remount,rw /
+# search for and mount the crux media, populate a tmpfs from it,
+# and prepare /newroot for switch_root at the end of the script
+find_and_mount_media() {
+	echo -e " ${BOLD}${BLUE}*${NORM} Searching for the CRUX media..."
+	mkdir /media
+	CRUXMEDIA=""
+	MMC_DEVICES="`grep -E 'mmcblk' /proc/partitions | awk '{ print $4 }'`"
+	BLOCK_DEVICES="`grep -E '[sh]d' /proc/partitions | awk '{ print $4 }'`"
+	for DEV in $MMC_DEVICES $BLOCK_DEVICES
+	do
+		DEV="/dev/$DEV"
+		mount -r $DEV /media 2> /dev/null
+		if [ $? -eq 0 ]
+			then
+			echo -e -n "   ${BOLD}${GREEN}*${NORM} Found media on $DEV"
+			if [ -e /media/crux-media ]
+			then
+				echo ", CRUX media."
+				CRUXMEDIA=$DEV
+				ln -s $DEV /dev/media
+				break
+			else
+				echo ", but it's not the CRUX media."
+				umount /media
+			fi
+		else
+			echo -e "   ${BOLD}${YELLOW}*${NORM} No media found on $DEV."
+		fi
+	done
 
-# Populating /dev
-/sbin/mdev -s
+	# check if the media was mounted properly. if not, spawn a shell
+	if [ ! -e /media/crux-media ]
+	then
+		echo
+		echo -e " ${BOLD}${RED}*${NORM} The CRUX media was not properly mounted!"
+		echo " Spawning a shell for you to attempt to fix this problem. If"
+		echo " you are able to find the correct device, mount it at"
+		echo " /media and then log out of this shell to continue."
+		echo " If you are NOT able to fix the problem, installation will"
+		echo " not be possible."
+		echo
+		/bin/sh
+	fi
 
-# Registering mdev as hotplug agent
+	# check again and stop if it's still not there
+	if [ ! -e /media/crux-media ]
+	then
+		echo
+		echo -e " ${BOLD}${RED}*${NORM} The CRUX media still appears not to be"
+		echo " found and installation will not continue."
+		echo
+	else
+		# configure for modules
+		MODULES_DIR="`find /media/crux/kernel -type d -name 'modules-*'`"
+		if [ ! -z "$MODULES_DIR" ]; then
+			ln -sf $MODULES_DIR/lib/modules /lib
+			depmod
+		fi
+		# configure the setup script
+		if [ -e /media/crux/setup ]; then
+			ln -sf /media/crux/setup /bin/setup
+		fi
+	fi
+}
+
+#
+# main script
+#
+
+echo ""
+echo -e "${BOLD}CRUX-ARM 2.7 - ${BLUE}http://crux-arm.nu/${NORM}"
+echo ""
+
+exec >/dev/console </dev/console 2>&1
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Mounting filesystems... "
+mount -v -a && mount -o remount,rw /
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Populating /dev via mdev... "
+mdev -s
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Registering mdev as hotplug agent... "
 echo "/bin/mdev" > /proc/sys/kernel/hotplug
+checkReturn
 
-# Creating and mounting /dev/pts
-/bin/mkdir /dev/pts
-/bin/mount -t devpts devpts /dev/pts
+echo -e -n " ${BOLD}${BLUE}*${NORM} Creating and mounting /dev/pts... "
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+checkReturn
 
-# Starting kernel log daemon
-/sbin/klogd
+echo -e -n " ${BOLD}${BLUE}*${NORM} Starting kernel log daemon... "
+klogd
+checkReturn
 
-# Setting hostname
-/bin/hostname crux
+echo -e -n " ${BOLD}${BLUE}*${NORM} Setting hostname... "
+hostname crux
+checkReturn
 
-# Loading network loopback device
-/bin/ip addr add 127.0.0.1/8 dev lo broadcast + scope host
-/bin/ip link set lo up
+echo -e -n " ${BOLD}${BLUE}*${NORM} Loading network loopback device... "
+ip addr add 127.0.0.1/8 dev lo broadcast + scope host
+checkReturn
+ip link set lo up
+checkReturn
+echo "127.0.0.1 localhost crux" > /etc/hosts
+checkReturn
 
-# Saving boot messages
-/bin/dmesg > /var/log/boot
+echo -e -n " ${BOLD}${BLUE}*${NORM} Saving boot messages... "
+dmesg > /var/log/boot
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Trying to find and mount the media installer... "
+find_and_mount_media
+
+echo
+echo "The system is coming up. Please wait."
+echo
 
 # End of file
