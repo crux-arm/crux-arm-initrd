@@ -88,7 +88,7 @@ dialog-distclean:
 $(WORK)/mnt:
 	mkdir -p $(WORK)/mnt
 
-$(WORK)/initrd.gz: check-root busybox dialog $(KERNEL_PATH) $(WORK)/mnt $(TOPDIR)/filesystem $(TOPDIR)/mkinitrd.sh
+$(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(TOPDIR)/mkinitrd.sh
 	sh mkinitrd.sh --name=$(WORK)/initrd.gz --size=4096
 	cd $(WORK) && gunzip -v initrd.gz
 	mount -v -t ext2 -o loop,rw $(WORK)/initrd $(WORK)/mnt
