@@ -99,7 +99,7 @@ $(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(
 	cp -dRv $(CLFS)/usr/share/terminfo/v $(WORK)/mnt/usr/share/terminfo
 	install -v -m 0644 $(TOPDIR)/filesystem/{fstab,inittab,profile,protocols,*.conf} $(WORK)/mnt/etc
 	install -v -m 0755 $(TOPDIR)/filesystem/rc $(WORK)/mnt/etc && \
-	install -v -m 0755 $(TOPDIR)/filesystem/crux $(WORK)/mnt/usr/bin && \
+	install -v -m 0755 $(TOPDIR)/filesystem/{setup,crux} $(WORK)/mnt/usr/bin && \
 	/sbin/ldconfig -r $(WORK)/mnt
 	umount -v $(WORK)/mnt
 	cd $(WORK) && gzip -v initrd
