@@ -30,7 +30,7 @@ checkReturn() {
 # and prepare /newroot for switch_root at the end of the script
 find_and_mount_media() {
 	echo -e " ${BOLD}${BLUE}*${NORM} Searching for the CRUX media..."
-	mkdir /media
+	mkdir -p /media
 	CRUXMEDIA=""
 	MMC_DEVICES="`grep -E 'mmcblk' /proc/partitions | awk '{ print $4 }'`"
 	BLOCK_DEVICES="`grep -E '[sh]d' /proc/partitions | awk '{ print $4 }'`"
@@ -78,15 +78,18 @@ find_and_mount_media() {
 		echo " found and installation will not continue."
 		echo
 	else
-		# configure for modules
+		# configure modules
 		MODULES_DIR="`find /media/crux/kernel -type d -name 'modules-*'`"
 		if [ ! -z "$MODULES_DIR" ]; then
 			ln -sf $MODULES_DIR/lib/modules /lib
 			depmod
 		fi
-		# configure the setup script
-		if [ -e /media/crux/setup ]; then
-			ln -sf /media/crux/setup /bin/setup
+		# configure pkgutils
+		PKGUTILS="`find /media/crux/core -type f -name 'pkgutils#*.pkg.tar.gz'`"
+		if [ ! -z "$PKGUTILS" ]; then
+			tar -C /tmp -xzf $PKGUTILS
+			cd /usr/bin && ln -s /tmp/usr/bin/* .
+			cd /etc && ln -s /tmp/etc/* .
 		fi
 	fi
 }
@@ -102,7 +105,8 @@ echo ""
 exec >/dev/console </dev/console 2>&1
 
 echo -e -n " ${BOLD}${BLUE}*${NORM} Mounting filesystems... "
-mount -v -a && mount -o remount,rw /
+mount -a && \
+mount -o remount,rw /
 checkReturn
 
 echo -e -n " ${BOLD}${BLUE}*${NORM} Populating /dev via mdev... "
@@ -127,10 +131,8 @@ hostname crux
 checkReturn
 
 echo -e -n " ${BOLD}${BLUE}*${NORM} Loading network loopback device... "
-ip addr add 127.0.0.1/8 dev lo broadcast + scope host
-checkReturn
-ip link set lo up
-checkReturn
+ip addr add 127.0.0.1/8 dev lo broadcast + scope host && \
+ip link set lo up && \
 echo "127.0.0.1 localhost crux" > /etc/hosts
 checkReturn
 
@@ -138,7 +140,7 @@ echo -e -n " ${BOLD}${BLUE}*${NORM} Saving boot messages... "
 dmesg > /var/log/boot
 checkReturn
 
-echo -e -n " ${BOLD}${BLUE}*${NORM} Trying to find and mount the media installer... "
+echo -e " ${BOLD}${BLUE}*${NORM} Trying to find and mount the media installer..."
 find_and_mount_media
 
 echo
