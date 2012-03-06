@@ -13,10 +13,10 @@ WORK = $(TOPDIR)/work
 CLFS = $(TOPDIR)/../toolchain/clfs
 CROSSTOOLS = $(TOPDIR)/../toolchain/crosstools
 
-BUSYBOX_VERSION  = 1.18.4
+BUSYBOX_VERSION  = 1.19.4
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
-DIALOG_VERSION = 1.1-20100119
+DIALOG_VERSION = 1.1-20120215
 DIALOG_SOURCE = ftp://dickey.his.com/dialog/dialog-$(DIALOG_VERSION).tgz
 
 .PHONY: all check-root busybox dialog initrd clean distclean
