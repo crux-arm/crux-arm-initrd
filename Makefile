@@ -25,7 +25,7 @@ all: initrd
 
 clean: busybox-clean dialog-clean initrd-clean
 
-dist-clean: busybox-distclean dialog-distclean initrd-distclean
+distclean: busybox-distclean dialog-distclean initrd-distclean
 
 check-root:
 	@if [ "$$UID" != "0" ]; then \
@@ -55,7 +55,7 @@ busybox: $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/bin/busybox
 busybox-clean:
 	rm -vrf $(WORK)/busybox-$(BUSYBOX_VERSION)
 
-busybox-distclean:
+busybox-distclean: busybox-clean
 	rm -vf $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
 
 $(WORK)/dialog-$(DIALOG_VERSION).tgz:
@@ -82,8 +82,8 @@ dialog: $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog
 dialog-clean:
 	rm -vrf $(WORK)/dialog-$(DIALOG_VERSION)
 
-dialog-distclean:
-	rm -rf $(WORK)/dialog-$(DIALOG_VERSION).tgz
+dialog-distclean: dialog-clean
+	rm -vf $(WORK)/dialog-$(DIALOG_VERSION).tgz
 
 $(WORK)/mnt:
 	mkdir -p $(WORK)/mnt
@@ -108,7 +108,7 @@ $(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(
 initrd: $(WORK)/initrd.gz
 
 initrd-clean: check-root
-	rm -rf initrd.gz
+	rm -vf $(WORK)/initrd.gz
 
 initrd-distclean: initrd-clean
 
