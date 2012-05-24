@@ -22,7 +22,7 @@
 # USA.
 #
 
-VERSION="2.7"
+VERSION="2.7.1"
 
 do_dialog() {
     dialog --backtitle "CRUX $VERSION Setup" --no-shadow "$@"
@@ -301,9 +301,9 @@ main() {
         if [ "$ACTION" = "UPGRADE" ] && [ -f /usr/bin/setup-helper ]
         then
                 (/usr/bin/setup-helper $ROOT &> $helperlogfile) | do_dialog \
-                        --title " Please wait [2.6 -> 2.7 check]" --gauge "" 8 60 0
+                        --title " Please wait [2.6 -> 2.7.1 check]" --gauge "" 8 60 0
         fi
-		install_packages
+	install_packages
         cat $helperlogfile 2> /dev/null
 }
 
