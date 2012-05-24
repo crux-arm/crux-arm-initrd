@@ -1,0 +1,1 @@
+- to build 'dialog' you need 'ncurses' installed with pkgadd-cross in clfs

@@ -19,6 +19,8 @@ BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.b
 DIALOG_VERSION = 1.1-20120215
 DIALOG_SOURCE = ftp://dickey.his.com/dialog/dialog-$(DIALOG_VERSION).tgz
 
+NCURSES_HEADER = $(CLFS)/usr/include/ncurses.h
+
 .PHONY: all check-root busybox dialog initrd clean distclean
 
 all: initrd
@@ -77,7 +79,7 @@ $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog: $(WORK)/dialog-$(DIALO
 		$(TARGET)-strip $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog && \
 		touch $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog
 
-dialog: $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog
+dialog: $(NCURSES_HEADER) $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog
 
 dialog-clean:
 	rm -vrf $(WORK)/dialog-$(DIALOG_VERSION)
