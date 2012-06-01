@@ -42,7 +42,7 @@ $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2:
 $(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config
 	tar -C $(WORK) -xvjf $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
 	cp -v $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config $(WORK)/busybox-$(BUSYBOX_VERSION)/.config
-	touch $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
+	touch $(WORK)/busybox-$(BUSYBOX_VERSION)
 
 $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/bin/busybox: $(WORK)/busybox-$(BUSYBOX_VERSION)
 	export PATH=$(CROSSTOOLS)/bin:$$PATH &&  \
@@ -101,7 +101,7 @@ $(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(
 	cp -dRv $(CLFS)/usr/share/terminfo/v $(WORK)/mnt/usr/share/terminfo
 	install -v -m 0644 $(TOPDIR)/filesystem/{fstab,inittab,profile,protocols,*.conf} $(WORK)/mnt/etc
 	install -v -m 0755 $(TOPDIR)/filesystem/rc $(WORK)/mnt/etc && \
-	install -v -m 0755 $(TOPDIR)/filesystem/{setup,crux} $(WORK)/mnt/usr/bin && \
+	install -v -m 0755 $(TOPDIR)/filesystem/{setup*,crux} $(WORK)/mnt/usr/bin && \
 	/sbin/ldconfig -r $(WORK)/mnt
 	umount -v $(WORK)/mnt
 	cd $(WORK) && gzip -v initrd
