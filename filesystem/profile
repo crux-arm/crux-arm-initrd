@@ -2,6 +2,6 @@
 # /etc/profile
 #
 
-export PS1="\\033[1mcrux:\w \$ \\033[0m"
+export PS1="\[\033[1m\]\\$ \[\033[0m\]"
 
 # End of file
