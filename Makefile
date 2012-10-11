@@ -13,10 +13,10 @@ WORK = $(TOPDIR)/work
 CLFS = $(TOPDIR)/../toolchain/clfs
 CROSSTOOLS = $(TOPDIR)/../toolchain/crosstools
 
-BUSYBOX_VERSION  = 1.19.4
+BUSYBOX_VERSION  = 1.20.2
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
-DIALOG_VERSION = 1.1-20120215
+DIALOG_VERSION = 1.1-20120706
 DIALOG_SOURCE = ftp://dickey.his.com/dialog/dialog-$(DIALOG_VERSION).tgz
 
 NCURSES_HEADER = $(CLFS)/usr/include/ncurses.h
@@ -41,6 +41,8 @@ $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2:
 
 $(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config
 	tar -C $(WORK) -xvjf $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
+	cd $(WORK)/busybox-$(BUSYBOX_VERSION) && \
+		patch -p1 -i $(WORK)/fix-resource_header.patch
 	cp -v $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config $(WORK)/busybox-$(BUSYBOX_VERSION)/.config
 	touch $(WORK)/busybox-$(BUSYBOX_VERSION)
 
@@ -74,7 +76,7 @@ $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog: $(WORK)/dialog-$(DIALO
 		./configure --build=$(BUILD) --host=$(TARGET) --prefix=/usr --with-ncursesw && \
 		find -type f -name 'makefile' \
 		-exec sed -e "s|-I/usr|-I$(CLFS)/usr|g" -e "s|-L/usr|-L$(CLFS)/usr|g" -i {} \; && \
-		make CC="$(TARGET)-gcc -static" && \
+		make CC="$(TARGET)-gcc -static -mno-unaligned-access" && \
 		make DESTDIR=$(WORK)/dialog-$(DIALOG_VERSION)/_install install && \
 		$(TARGET)-strip $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog && \
 		touch $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog
