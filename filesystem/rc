@@ -79,14 +79,14 @@ find_and_mount_media() {
 		echo
 	else
 		# configure modules
-		MODULES="`find /media/crux/kernel -type f -name 'modules-*.tar.*'`"
+		MODULES="`find /media/crux/kernel -type f -name 'modules-*.tar.*' 2>/dev/null`"
 		if [ ! -z "$MODULES" ]; then
 			tar -C /tmp -xf $MODULES
 			cd /lib && ln -s /tmp/lib/* .
 			depmod
 		fi
 		# configure pkgutils
-		PKGUTILS="`find /media/crux/core -type f -name 'pkgutils#*.pkg.tar.*'`"
+		PKGUTILS="`find /media/crux/core -type f -name 'pkgutils#*.pkg.tar.*' 2>/dev/null`"
 		if [ ! -z "$PKGUTILS" ]; then
 			tar -C /tmp -xf $PKGUTILS
 			cd /usr/bin && ln -s /tmp/usr/bin/* .
