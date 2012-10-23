@@ -102,8 +102,11 @@ $(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(
 	install -d  $(WORK)/mnt/usr/share/terminfo
 	cp -dRv $(CLFS)/usr/share/terminfo/v $(WORK)/mnt/usr/share/terminfo
 	install -v -m 0644 $(TOPDIR)/filesystem/{fstab,inittab,profile,protocols,*.conf} $(WORK)/mnt/etc
+	install -v -m 0664 $(TOPDIR)/filesystem/group $(WORK)/mnt/etc
+	install -v -m 0600 $(TOPDIR)/filesystem/passwd $(WORK)/mnt/etc
+	install -v -m 0400 $(TOPDIR)/filesystem/shadow $(WORK)/mnt/etc
 	install -v -m 0755 $(TOPDIR)/filesystem/rc $(WORK)/mnt/etc && \
-	install -v -m 0755 $(TOPDIR)/filesystem/{setup*,crux} $(WORK)/mnt/usr/bin && \
+	install -v -m 0755 $(TOPDIR)/filesystem/{setup,setup-chroot,crux} $(WORK)/mnt/usr/bin && \
 	/sbin/ldconfig -r $(WORK)/mnt
 	umount -v $(WORK)/mnt
 	cd $(WORK) && gzip -v initrd
