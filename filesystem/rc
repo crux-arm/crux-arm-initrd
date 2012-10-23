@@ -32,7 +32,7 @@ find_and_mount_media() {
 	echo -e " ${BOLD}${BLUE}*${NORM} Searching for the CRUX media..."
 	mkdir -p /media
 	CRUXMEDIA=""
-	MMC_DEVICES="`grep -E 'mmcblk' /proc/partitions | awk '{ print $4 }'`"
+	MMC_DEVICES="`grep -E 'mmcblk0p' /proc/partitions | awk '{ print $4 }'`"
 	BLOCK_DEVICES="`grep -E '[sh]d' /proc/partitions | awk '{ print $4 }'`"
 	for DEV in $MMC_DEVICES $BLOCK_DEVICES
 	do
@@ -100,7 +100,7 @@ find_and_mount_media() {
 #
 
 echo ""
-echo -e "${BOLD}CRUX-ARM 2.7.1 - ${BLUE}http://crux-arm.nu/${NORM}"
+echo -e "${BOLD}CRUX-ARM 2.8 - ${BLUE}http://crux-arm.nu/${NORM}"
 echo ""
 
 exec >/dev/console </dev/console 2>&1
@@ -143,6 +143,12 @@ checkReturn
 
 echo -e " ${BOLD}${BLUE}*${NORM} Trying to find and mount the media installer..."
 find_and_mount_media
+
+if grep -q debug /proc/cmdline; then
+	echo -e -n " ${BOLD}${BLUE}*${NORM} Loading debug script..."
+	/media/debug.sh
+	checkReturn
+fi
 
 echo
 echo "The system is coming up. Please wait."
