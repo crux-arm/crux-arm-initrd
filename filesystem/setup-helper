@@ -71,9 +71,9 @@ remove_packages() {
 
 inject_packages() {
     for package in $@; do
-    pkg="`find core opt xorg \( -name \"${package}#*.pkg.tar.gz\" -o -name \"${package}#*.pkg.tar.bz2\" -o -name \"${package}#*.pkg.tar.xz\" \)&2> /dev/null`"
+    pkg="`find core $EXTRA_COLLECTIONS \( -name \"${package}#*.pkg.tar.gz\" -o -name \"${package}#*.pkg.tar.bz2\" -o -name \"${package}#*.pkg.tar.xz\" \)&2> /dev/null`"
 	if [ -z "$pkg" ]; then
-		echo "  ERROR: package $package not found on ISO"
+		echo "  ERROR: package $package not found on CRUX media installer"
 	else
 		if [ -z `is_installed $package` ]; then
 		    echo "Package injected: $package"
@@ -93,6 +93,14 @@ if [ -z "$1" ]; then
     exit -1
 fi
 
+EXTRA_COLLECTIONS=""
+for i in /media/crux/*; do.
+	if [ -d $i ]; then
+		if [ "$i" != "core" ] && [ "$i" != "kernel" ]; then
+			EXTRA_COLLECTIONS="$EXTRA_COLLECTIONS $i"
+		fi
+	fi
+done
 
 ##### # 2.7 -> 2.8 #####
 echo "* CRUX 2.7 -> 2.8 setup-helper"
@@ -101,32 +109,38 @@ rename_packages "util-linux-ng:util-linux"
 remove_packages module-init-tools eject
 inject_packages kmod tzdata util-linux
 
-if [ `is_installed glib` ]; then
-    inject_packages libffi
+if grep -q opt $EXTRA_COLLECTIONS; then
+
+	if [ `is_installed glib` ]; then
+	    inject_packages libffi
+	fi
+
+	if [ `is_installed wpa_supplicant` ]; then
+	    inject_packages libnl
+	fi
 fi
 
-if [ `is_installed wpa_supplicant` ]; then
-    inject_packages libnl
-fi
+if grep -q xorg $EXTRA_COLLECTIONS; then
 
-if [ `is_installed xorg-xcb-util` ]; then
-    inject_packages xorg-xcb-util-image xorg-xcb-util-keysyms xorg-xcb-util-renderutil xorg-xcb-util-wm
-fi
+	if [ `is_installed xorg-xcb-util` ]; then
+	    inject_packages xorg-xcb-util-image xorg-xcb-util-keysyms xorg-xcb-util-renderutil xorg-xcb-util-wm
+	fi
 
-if [ `is_installed xorg-xf86-input-evdev` ]; then
-    inject_packages mtdev
-fi
+	if [ `is_installed xorg-xf86-input-evdev` ]; then
+	    inject_packages mtdev
+	fi
 
-if [ `is_installed xorg-xf86-input-synaptics` ]; then
-    inject_packages mtdev
-fi
+	if [ `is_installed xorg-xf86-input-synaptics` ]; then
+	    inject_packages mtdev
+	fi
 
-if [ `is_installed firefox` ]; then
-    inject_packages nspr nss sqlite3
-fi
+	if [ `is_installed firefox` ]; then
+	    inject_packages nspr nss sqlite3
+	fi
 
-if [ `is_installed mesa3d` ]; then
-    inject_packages glu
+	if [ `is_installed mesa3d` ]; then
+	    inject_packages glu
+	fi
 fi
 
 # force replacement of /etc/mtab with symlink
