@@ -118,6 +118,10 @@ if grep -q opt $EXTRA_COLLECTIONS; then
 	if [ `is_installed wpa_supplicant` ]; then
 	    inject_packages libnl
 	fi
+
+	if [ `is_installed firefox` ]; then
+	    inject_packages nspr nss sqlite3
+	fi
 fi
 
 if grep -q xorg $EXTRA_COLLECTIONS; then
@@ -132,10 +136,6 @@ if grep -q xorg $EXTRA_COLLECTIONS; then
 
 	if [ `is_installed xorg-xf86-input-synaptics` ]; then
 	    inject_packages mtdev
-	fi
-
-	if [ `is_installed firefox` ]; then
-	    inject_packages nspr nss sqlite3
 	fi
 
 	if [ `is_installed mesa3d` ]; then
