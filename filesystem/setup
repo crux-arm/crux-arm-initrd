@@ -22,7 +22,7 @@
 # USA.
 #
 
-VERSION="2.7.1"
+VERSION="2.8"
 
 do_dialog() {
     dialog --backtitle "CRUX $VERSION Setup" --no-shadow "$@"
@@ -76,6 +76,16 @@ select_root() {
     done
 }
 
+get_extra_collections() {
+    for i in $crux_dir/*; do
+        if [ -d $i ]; then
+		if [ "$i" != "core" ] && [ "$i" != "kernel" ]; then
+			EXTRA_COLLECTIONS="$EXTRA_COLLECTIONS $i"
+		fi
+	fi
+    done
+}
+
 select_collections() {
         if [ "$ACTION" != "INSTALL" ]; then
                 return 0
@@ -87,8 +97,7 @@ select_collections() {
         TITLE="Select collections to install:\n(detailed package selection will follow)"
         do_select --separate-output --checklist "$TITLE" 13 60 6 \
                 core "The core packages (required)" ON \
-                opt "Optional packages" OFF \
-                xorg "X.org packages" OFF 2> $collfile
+                $(for col in $EXTRA_COLLECTIONS; do echo -ne "$col \"$col packages\" OFF "; done) 2> $collfile
 }
 
 ask_detailed() {
@@ -105,7 +114,7 @@ select_packages() {
         fi
         if [ "$ACTION" = "INSTALL" ]; then
                 if [ "$DO_DETAILED" = "yes" ]; then
-                        for collection in core opt xorg; do
+                        for collection in core $EXTRA_COLLECTIONS; do
                                 [ ! -d $collection ] && continue
                                 presel=`grep $collection $collfile`
                                 if [ "$presel" == "$collection" ]; then
@@ -119,7 +128,8 @@ select_packages() {
                                 do_select --separate-output --checklist "$TITLE" 19 60 12 $PKG_LIST 2>> $pkgfile
                         done
                 else # no detailed selection
-                        for collection in core opt xorg; do
+                        for collection in core $EXTRA_COLLECTIONS; do
+
                                 [ ! -d $collection ] && continue
                                 presel=`grep $collection $collfile`
                                 if [ "$presel" == "$collection" ]; then
@@ -293,6 +303,7 @@ main() {
         welcome
         select_action
         select_root
+        get_extra_collections
         select_collections
         ask_detailed
         select_packages
@@ -301,7 +312,7 @@ main() {
         if [ "$ACTION" = "UPGRADE" ] && [ -f /usr/bin/setup-helper ]
         then
                 (/usr/bin/setup-helper $ROOT &> $helperlogfile) | do_dialog \
-                        --title " Please wait [2.6 -> 2.7.1 check]" --gauge "" 8 60 0
+                        --title " Please wait [2.7 -> 2.8 check]" --gauge "" 8 60 0
         fi
 	install_packages
         cat $helperlogfile 2> /dev/null
@@ -319,6 +330,8 @@ markedfile=/tmp/marked.$$
 # Detailed selection of packages
 DO_DETAILED="no"
 MISSINGDEPS=""
+
+EXTRA_COLLECTIONS=""
 
 trap "rm -f $tmpfile $pkgfile $collfile $neededfile $markedfile" 0 1 2 5 15
 
