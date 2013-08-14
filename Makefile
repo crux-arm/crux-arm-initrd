@@ -75,7 +75,7 @@ $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog: $(WORK)/dialog-$(DIALO
 		./configure --build=$(BUILD) --host=$(TARGET) --prefix=/usr --with-ncursesw && \
 		find -type f -name 'makefile' \
 		-exec sed -e "s|-I/usr|-I$(CLFS)/usr|g" -e "s|-L/usr|-L$(CLFS)/usr|g" -i {} \; && \
-		make CC="$(TARGET)-gcc -static -mno-unaligned-access" && \
+		make CC="$(TARGET)-gcc -static" && \
 		make DESTDIR=$(WORK)/dialog-$(DIALOG_VERSION)/_install install && \
 		$(TARGET)-strip $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog && \
 		touch $(WORK)/dialog-$(DIALOG_VERSION)/_install/usr/bin/dialog
