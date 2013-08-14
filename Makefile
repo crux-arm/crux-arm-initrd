@@ -15,8 +15,8 @@ CROSSTOOLS = $(TOPDIR)/../toolchain/crosstools
 BUSYBOX_VERSION  = 1.20.2
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
-DIALOG_VERSION = 1.1-20120706
-DIALOG_SOURCE = ftp://dickey.his.com/dialog/dialog-$(DIALOG_VERSION).tgz
+DIALOG_VERSION = 1.2-20130523
+DIALOG_SOURCE = ftp://invisible-island.net/dialog/dialog-$(DIALOG_VERSION).tgz
 
 NCURSES_HEADER = $(CLFS)/usr/include/ncurses.h
 
