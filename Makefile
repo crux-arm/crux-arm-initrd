@@ -6,8 +6,7 @@ TOPDIR = $(shell pwd)
 
 include $(TOPDIR)/../toolchain/vars.mk
 
-TARGET = arm-crux-linux-gnueabi
-DEVICE = versatile
+TARGET = arm-crux-linux-gnueabihf
 
 WORK = $(TOPDIR)/work
 CLFS = $(TOPDIR)/../toolchain/clfs
