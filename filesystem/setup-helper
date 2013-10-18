@@ -102,44 +102,12 @@ for i in /media/crux/*; do.
 	fi
 done
 
-##### # 2.7 -> 2.8 #####
-echo "* CRUX 2.7 -> 2.8 setup-helper"
-
-rename_packages "util-linux-ng:util-linux"
-remove_packages module-init-tools eject
-inject_packages kmod tzdata util-linux
+##### # 2.8 -> 3.0 #####
+echo "* CRUX-ARM 2.8 -> 3.0 setup-helper"
 
 if grep -q opt $EXTRA_COLLECTIONS; then
-
-	if [ `is_installed glib` ]; then
-	    inject_packages libffi
-	fi
-
-	if [ `is_installed wpa_supplicant` ]; then
-	    inject_packages libnl
-	fi
-
-	if [ `is_installed firefox` ]; then
-	    inject_packages nspr nss sqlite3
-	fi
-fi
-
-if grep -q xorg $EXTRA_COLLECTIONS; then
-
-	if [ `is_installed xorg-xcb-util` ]; then
-	    inject_packages xorg-xcb-util-image xorg-xcb-util-keysyms xorg-xcb-util-renderutil xorg-xcb-util-wm
-	fi
-
-	if [ `is_installed xorg-xf86-input-evdev` ]; then
-	    inject_packages mtdev
-	fi
-
-	if [ `is_installed xorg-xf86-input-synaptics` ]; then
-	    inject_packages mtdev
-	fi
-
-	if [ `is_installed mesa3d` ]; then
-	    inject_packages glu
+	if [ `is_installed pango` ]; then
+		inject_packages harfbuzz
 	fi
 fi
 
