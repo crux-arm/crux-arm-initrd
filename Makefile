@@ -1,5 +1,5 @@
 # 
-# initrd.git/Makefile
+# initrd/Makefile
 #
 
 TOPDIR = $(shell pwd)
@@ -38,7 +38,7 @@ check-root:
 $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2:
 	wget -P $(WORK) -c $(BUSYBOX_SOURCE)
 
-$(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config
+$(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $(TOPDIR)/busybox-$(BUSYBOX_VERSION).config $(WORK)/fix-resource_header.patch
 	tar -C $(WORK) -xvjf $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2
 	cd $(WORK)/busybox-$(BUSYBOX_VERSION) && \
 		patch -p1 -i $(WORK)/fix-resource_header.patch
@@ -114,7 +114,7 @@ $(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(
 initrd: $(WORK)/initrd.gz
 
 initrd-clean: check-root
-	rm -vf $(WORK)/initrd.gz
+	rm -vf $(WORK)/initrd.gz $(WORK)/mnt
 
 initrd-distclean: initrd-clean
 
