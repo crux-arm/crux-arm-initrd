@@ -114,7 +114,7 @@ $(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(
 initrd: $(WORK)/initrd.gz
 
 initrd-clean: check-root
-	rm -vf $(WORK)/initrd.gz $(WORK)/mnt
+	rm -rvf $(WORK)/initrd.gz $(WORK)/mnt
 
 initrd-distclean: initrd-clean
 
