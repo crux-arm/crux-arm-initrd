@@ -48,7 +48,7 @@ $(WORK)/busybox-$(BUSYBOX_VERSION): $(WORK)/busybox-$(BUSYBOX_VERSION).tar.bz2 $
 $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/bin/busybox: $(WORK)/busybox-$(BUSYBOX_VERSION)
 	export PATH=$(CROSSTOOLS)/bin:$$PATH &&  \
 	export LD_LIBRARY_PATH=$(CROSSTOOLS)/lib:$$LD_LIBRARY_PATH && \
-	make -C $(WORK)/busybox-$(BUSYBOX_VERSION) ARCH=arm CROSS_COMPILE=$(TARGET)- install && \
+	make -j1 -C $(WORK)/busybox-$(BUSYBOX_VERSION) ARCH=arm CROSS_COMPILE=$(TARGET)- install && \
 	install -D -m 0755 $(WORK)/busybox-$(BUSYBOX_VERSION)/examples/udhcp/simple.script $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/usr/share/udhcpc/default.script && \
 	$(TARGET)-strip $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/bin/busybox && \
 	touch $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/bin/busybox
