@@ -106,6 +106,7 @@ $(WORK)/initrd.gz: check-root busybox dialog $(WORK)/mnt $(TOPDIR)/filesystem $(
 	install -v -m 0400 $(TOPDIR)/filesystem/shadow $(WORK)/mnt/etc
 	install -v -m 0755 $(TOPDIR)/filesystem/rc $(WORK)/mnt/etc && \
 	install -v -m 0755 $(TOPDIR)/filesystem/{setup,setup-chroot,crux} $(WORK)/mnt/usr/bin && \
+	ln -s bin/busybox $(WORK)/mnt/init
 	/sbin/ldconfig -r $(WORK)/mnt
 	umount -v $(WORK)/mnt
 	cd $(WORK) && gzip -v initrd
