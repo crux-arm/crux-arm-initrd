@@ -102,8 +102,8 @@ for i in /media/crux/*; do.
 	fi
 done
 
-##### # 2.8 -> 3.0 #####
-echo "* CRUX-ARM 2.8 -> 3.0 setup-helper"
+##### # 3.0 -> 3.1 #####
+echo "* CRUX-ARM 3.0 -> 3.1 setup-helper"
 
 if grep -q opt $EXTRA_COLLECTIONS; then
 	if [ `is_installed pango` ]; then
