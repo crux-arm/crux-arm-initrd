@@ -12,10 +12,10 @@ WORK = $(TOPDIR)/work
 CLFS = $(TOPDIR)/../toolchain/clfs
 CROSSTOOLS = $(TOPDIR)/../toolchain/crosstools
 
-BUSYBOX_VERSION  = 1.22.0
+BUSYBOX_VERSION  = 1.24.1
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
-E2FSPROGS_VERSION = 1.42.5
+E2FSPROGS_VERSION = 1.42.13
 E2FSPROGS_SOURCE = http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v$(E2FSPROGS_VERSION)/e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
 
 DIALOG_VERSION = 1.2-20130523
