@@ -2,6 +2,8 @@
 # initrd/Makefile
 #
 
+SHELL = /bin/bash
+
 TOPDIR = $(shell pwd)
 
 include $(TOPDIR)/../toolchain/vars.mk
@@ -12,13 +14,13 @@ WORK = $(TOPDIR)/work
 CLFS = $(TOPDIR)/../toolchain/clfs
 CROSSTOOLS = $(TOPDIR)/../toolchain/crosstools
 
-BUSYBOX_VERSION  = 1.24.1
+BUSYBOX_VERSION  = 1.26.2
 BUSYBOX_SOURCE   = http://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
-E2FSPROGS_VERSION = 1.42.13
+E2FSPROGS_VERSION = 1.43.4
 E2FSPROGS_SOURCE = http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v$(E2FSPROGS_VERSION)/e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
 
-DIALOG_VERSION = 1.2-20130523
+DIALOG_VERSION = 1.3-20160828
 DIALOG_SOURCE = ftp://invisible-island.net/dialog/dialog-$(DIALOG_VERSION).tgz
 
 NCURSES_HEADER = $(CLFS)/usr/include/ncurses.h
@@ -125,7 +127,7 @@ $(WORK)/mnt:
 	mkdir -p $(WORK)/mnt
 
 $(WORK)/initrd.gz: check-root busybox e2fsprogs dialog $(WORK)/mnt $(TOPDIR)/filesystem $(TOPDIR)/mkinitrd.sh
-	sh mkinitrd.sh --name=$(WORK)/initrd.gz --size=4096
+	./mkinitrd.sh --name=$(WORK)/initrd.gz --size=4096
 	cd $(WORK) && gunzip -v initrd.gz
 	mount -v -t ext2 -o loop,rw $(WORK)/initrd $(WORK)/mnt
 	cp -dRv $(WORK)/busybox-$(BUSYBOX_VERSION)/_install/* $(WORK)/mnt

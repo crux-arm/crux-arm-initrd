@@ -1,7 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 # 
 # mkinitrd.sh: Shell script to make an initial initrd image
 # by Jose V Beneyto, sepen at crux dot nu
+
+CONFIG_SHELL=/bin/bash
 
 msgUsage() {
   echo "Usage: $APPNAME <options>"
