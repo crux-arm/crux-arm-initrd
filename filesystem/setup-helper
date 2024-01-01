@@ -1,0 +1,120 @@
+#!/bin/bash
+# post setup
+#
+# Johannes Winkelmann, jw at tks6 dot net
+
+ROOT=$1
+DB=$ROOT/var/lib/pkg/db
+
+## those values should be changed:
+TMPDB=$DB.tmp
+BACKUPDB=$DB.backup
+PKGADD="pkgadd"
+PKGRM="pkgrm"
+MV="mv"
+
+
+is_installed() {
+    printf "%s" $(pkginfo -r $ROOT -i | gawk -v r="^$1\$" '$1 ~ r {print $1}')
+}
+
+
+rename_packages() {
+    if [ -z "$1" ]; then
+	return
+    fi
+    pkg=$@
+    
+    filter="sed "
+    runfilter="no"
+    for tuple in $@; do
+	split=($(echo $tuple|sed -e 's|:| |'))
+	if [ -n "${split[1]}" ] && [ `is_installed ${split[0]}` ]; then
+	    echo "Package renamed:  ${split[0]} -> ${split[1]}"
+	    filter="$filter -e 's|^${split[0]}$|${split[1]}|'"
+	    runfilter="yes"
+	fi
+    done
+    if [ "$runfilter" = "no" ]; then
+	return
+    fi
+
+    :> $TMPDB
+    if [ -f $DB ]; then
+	nextIsName=1
+	cat $DB|while read l; do
+	    if [ $nextIsName -eq 1 ]; then
+		nextIsName=0
+		echo $l|eval $filter >> $TMPDB
+	    else
+		if [ "$l" = "" ]; then
+		    nextIsName=1
+		fi
+		echo $l >> $TMPDB
+	    fi
+	done
+    fi
+
+    $MV $DB $BACKUPDB
+    $MV $TMPDB $DB
+}
+
+
+remove_packages() {
+    for package in $@; do
+	if [ `is_installed $package` ]; then
+	    echo "Package removed:  $package"
+            $PKGRM -r $ROOT $package
+	fi
+    done
+}
+
+inject_packages() {
+    for package in $@; do
+    pkg="`find core $EXTRA_COLLECTIONS \( -name \"${package}#*.pkg.tar.gz\" -o -name \"${package}#*.pkg.tar.bz2\" -o -name \"${package}#*.pkg.tar.xz\" \)&2> /dev/null`"
+	if [ -z "$pkg" ]; then
+		echo "  ERROR: package $package not found on CRUX media installer"
+	else
+		if [ -z `is_installed $package` ]; then
+		    echo "Package injected: $package"
+			$PKGADD -r $ROOT -f $pkg
+		else
+			echo "Package upgraded: $package"
+			$PKGADD -r $ROOT -u -f $pkg
+		fi
+	fi
+    done
+}
+
+####################
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <root>"
+    exit -1
+fi
+
+EXTRA_COLLECTIONS=""
+for i in /media/crux/*; do.
+	if [ -d $i ]; then
+		if [ "$i" != "core" ] && [ "$i" != "kernel" ]; then
+			EXTRA_COLLECTIONS="$EXTRA_COLLECTIONS $i"
+		fi
+	fi
+done
+
+##### # 3.2 -> 3.3 #####
+echo "* CRUX-ARM 3.2 -> 3.3 setup-helper"
+
+inject_packages signify
+
+if grep -q opt $EXTRA_COLLECTIONS; then
+  if [ `is_installed firefox` ]; then
+    inject_packages autoconf-2.13
+  fi
+  if [ `is_installed xorg-server` ]; then
+    inject_packages xorg-libxfont2
+  fi
+fi
+
+# force replacement of /etc/mtab with symlink
+ln -sf /proc/self/mounts $ROOT/etc/mtab

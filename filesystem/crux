@@ -1,0 +1,5 @@
+#! /bin/sh
+
+echo "CRUX-ARM 3.3"
+
+# End of file

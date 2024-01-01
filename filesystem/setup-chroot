@@ -1,0 +1,10 @@
+#!/bin/sh
+
+mount --bind /dev /mnt/dev
+mount --bind /tmp /mnt/tmp
+mount -t proc proc /mnt/proc
+mount -t sysfs none /mnt/sys
+mount -t devpts devpts /mnt/dev/pts
+
+chroot /mnt /bin/bash
+

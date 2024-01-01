@@ -1,0 +1,186 @@
+#!/bin/sh
+
+#
+# initramfs /init (busybox ash)
+#
+
+# color codes and some predefined texts
+BOLD="\033[1m"
+NORM="\033[0m"
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+BLUE="\033[34m"
+OK="${BOLD}${GREEN}OK${NORM}"
+FAILED="${BOLD}${RED}FAILED${NORM}"
+
+# helper functions
+
+# check an exit value and print a colored status
+checkReturn() {
+	if [ $? -ne 0 ]
+	then
+		echo -e $FAILED
+	else
+		echo -e $OK
+	fi
+}
+
+# search for and mount the crux media, populate a tmpfs from it,
+# and prepare /newroot for switch_root at the end of the script
+find_and_mount_media() {
+	echo -e " ${BOLD}${BLUE}*${NORM} Searching for the CRUX media..."
+	mkdir -p /media
+	MMC_DEVICES="`grep -E 'mmcblk0p' /proc/partitions | awk '{ print $4 }'`"
+	BLOCK_DEVICES="`grep -E '[sh]d' /proc/partitions | awk '{ print $4 }'`"
+	for DEV in $MMC_DEVICES $BLOCK_DEVICES
+	do
+		DEV="/dev/$DEV"
+		mount -r $DEV /media 2> /dev/null
+		if [ $? -eq 0 ]
+			then
+			echo -e -n "   ${BOLD}${GREEN}*${NORM} Found media on $DEV"
+			if [ -e /media/crux-media ]
+			then
+				echo ", CRUX media."
+				ln -s $DEV /dev/media
+				break
+			else
+				echo ", but it's not the CRUX media."
+				umount /media
+			fi
+		else
+			echo -e "   ${BOLD}${YELLOW}*${NORM} No media found on $DEV."
+		fi
+	done
+
+	# check if the media was mounted properly. if not, spawn a shell
+	if [ ! -e /media/crux-media ]
+	then
+		echo
+		echo -e " ${BOLD}${RED}*${NORM} The CRUX media was not properly mounted!"
+		echo " Spawning a shell for you to attempt to fix this problem. If"
+		echo " you are able to find the correct device, mount it at"
+		echo " /media and then log out of this shell to continue."
+		echo " If you are NOT able to fix the problem, installation will"
+		echo " not be possible."
+		echo
+		/bin/sh
+	fi
+
+	# check again and stop if it's still not there
+	if [ ! -e /media/crux-media ]
+	then
+		echo
+		echo -e " ${BOLD}${RED}*${NORM} The CRUX media still appears not to be"
+		echo " found and installation will not continue."
+		echo
+	else
+		# configure modules
+		MODULES="`find /media/crux/kernel -type f -name 'modules-*.tar.*' 2>/dev/null`"
+		if [ ! -z "$MODULES" ]; then
+			tar -C /tmp -xf $MODULES
+			cd /lib && ln -s /tmp/lib/* .
+			depmod
+		fi
+		# configure pkgutils
+		PKGUTILS="`find /media/crux/core -type f -name 'pkgutils#*.pkg.tar.*' 2>/dev/null`"
+		if [ ! -z "$PKGUTILS" ]; then
+			tar -C /tmp -xf $PKGUTILS
+			cd /usr/bin && ln -s /tmp/usr/bin/* .
+			cd /etc && ln -s /tmp/etc/* .
+		fi
+	fi
+}
+
+#
+# main script
+#
+
+echo ""
+echo -e "${BOLD}CRUX-ARM 3.3 - ${BLUE}http://crux-arm.nu/${NORM}"
+echo ""
+
+exec >/dev/console </dev/console 2>&1
+
+# premature mount /proc since we need some rw operations
+echo -e -n " ${BOLD}${BLUE}*${NORM} Mounting "
+echo -e -n "${BOLD}${GREEN}/proc${NORM}"
+mount -t proc proc /proc
+
+if grep -q "debug" /proc/cmdline
+then
+	DEBUG=1
+fi
+
+# dont show kernel printk messages
+PRINTK="`cat /proc/sys/kernel/printk`"
+if [ -z $DEBUG ]
+then
+	echo "0" > /proc/sys/kernel/printk
+fi
+
+echo -e ", ${BOLD}${GREEN}/sys${NORM}."
+mount -t sysfs sysfs /sys
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Mounting filesystems... "
+mount -a && \
+mount -o remount,rw /
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Populating /dev via mdev... "
+mdev -s
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Registering mdev as hotplug agent... "
+echo "/bin/mdev" > /proc/sys/kernel/hotplug
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Creating and mounting /dev/pts... "
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Starting kernel log daemon... "
+klogd
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Setting hostname... "
+hostname crux
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Loading network loopback device... "
+ip addr add 127.0.0.1/8 dev lo broadcast + scope host && \
+ip link set lo up && \
+echo "127.0.0.1 localhost crux" > /etc/hosts
+checkReturn
+
+echo -e -n " ${BOLD}${BLUE}*${NORM} Saving boot messages... "
+dmesg > /var/log/boot
+checkReturn
+
+# run mdev again to fix issues with mmc devices. yeah, it is weird but worked
+mdev -s
+
+echo -e " ${BOLD}${BLUE}*${NORM} Trying to find and mount the media installer..."
+find_and_mount_media
+
+# debug could be necessary when are working with a new device and/or features
+# and for a weird reason you can't see any output message on the console.
+# You can create a debug.sh script at topdir of your install media and redirect
+# the output to a file to inspect later
+if [ ! -z $DEBUG ];
+then
+	echo -e -n " ${BOLD}${BLUE}*${NORM} Loading debug script..."
+	/media/debug.sh
+	checkReturn
+fi
+
+echo
+echo "The system is coming up. Please wait."
+echo
+
+# restore kernel printk status
+echo "$PRINTK" > /proc/sys/kernel/printk
+
+# End of file
